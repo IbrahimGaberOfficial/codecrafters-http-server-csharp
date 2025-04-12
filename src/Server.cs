@@ -8,13 +8,6 @@ Console.WriteLine("Logs from your program will appear here!");
 TcpListener server = new TcpListener(IPAddress.Any, 4221);
 server.Start();
 
-int delay = 5;
-while (delay > 0)
-{
-    Console.WriteLine($"Waiting for {delay} seconds...");
-    delay--;
-    Thread.Sleep(1000);
-}
 Socket client = server.AcceptSocket();
 var response = System.Text.Encoding.UTF8.GetBytes("HTTP/1.1 200 OK\r\n\r\n");
 client.Send(response);
