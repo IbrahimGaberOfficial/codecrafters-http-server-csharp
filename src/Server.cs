@@ -15,10 +15,11 @@ int bytesRead = client.Receive(buffer);
 // Convert the byte array to a string
 string request = System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-
 var requestLines = request.Split("\r\n");
 var requestLineParts = requestLines[0].Split(" ", 3); // get the path from the request line
 var path = requestLineParts[1];
+
+
 
 byte[] response;
 
@@ -35,6 +36,18 @@ else if(path.StartsWith("/echo")){
                                                   $"Content-Length: {message.Length}\r\n" +
                                                   "\r\n" + 
                                                   $"{message}");
+}
+else if(path.StartsWith("/user-agent")){
+
+    // get the headers from the request
+    var headers = requestLines[3].Split(": ");
+    var userAgentValue = headers[1];
+
+     response = System.Text.Encoding.UTF8.GetBytes("HTTP/1.1 200 OK\r\n" +
+                                                  "Content-Type: text/plain\r\n" +
+                                                  $"Content-Length: {userAgentValue.Length}\r\n" +
+                                                  "\r\n" + 
+                                                  $"{userAgentValue}");
 }
 else {
     // return a 404 Not Found response
