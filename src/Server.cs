@@ -5,8 +5,19 @@ using System.Threading.Tasks;
 
 class Program
 {
+    static string DirectoryPath = "";
     static async Task Main(string[] args)
     {
+        // Parse --directory argument
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i] == "--directory" && i + 1 < args.Length)
+            {
+                DirectoryPath = args[i + 1];
+                break;
+            }
+        }
+
         TcpListener server = new TcpListener(IPAddress.Any, 4221);
         server.Start();
 
@@ -15,7 +26,7 @@ class Program
             while (true)
             {
                 var client = await server.AcceptSocketAsync();
-                _ = HandleClientAsync(client); // No Task.Run needed here
+                _ = HandleClientAsync(client);
             }
         }
         finally
@@ -64,8 +75,8 @@ class Program
                 {
                     // get file byte number
                     string fileName = path.Substring(7);
-                    string projectDir = Directory.GetParent(Environment.CurrentDirectory)!.Parent!.Parent!.FullName;
-                    string filePath = System.IO.Path.Combine("/tmp/data/codecrafters.io/http-server-tester/", fileName);
+                    //string projectDir = Directory.GetParent(Environment.CurrentDirectory)!.Parent!.Parent!.FullName;
+                    string filePath = System.IO.Path.Combine(DirectoryPath, fileName);
 
                     if (System.IO.File.Exists(filePath))
                     {
