@@ -9,31 +9,41 @@ class Program
     {
         TcpListener server = new TcpListener(IPAddress.Any, 4221);
         server.Start();
-        // Console.WriteLine("Server started. Waiting for connections...");
 
-        while (true) // Keep server running for multiple requests
+        try
         {
-            using Socket client = await server.AcceptSocketAsync();
-            _ = Task.Run(() => HandleClientAsync(client));
+            while (true)
+            {
+                var client = await server.AcceptSocketAsync();
+                _ = HandleClientAsync(client); // No Task.Run needed here
+            }
+        }
+        finally
+        {
+            server.Stop();
         }
     }
+
     static async Task HandleClientAsync(Socket client)
     {
-        using (client)
+        try
         {
-            try
+            using (client)
             {
                 byte[] buffer = new byte[1024];
-                int bytesRead = await client.ReceiveAsync(buffer);
-                string request = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                int bytesRead = await client.ReceiveAsync(buffer, SocketFlags.None);
+                
+                if (bytesRead == 0) return; // Connection closed
 
-                var requestLines = request.Split("\r\n");
+                string request = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                string[] requestLines = request.Split("\r\n");
+                
                 if (requestLines.Length == 0) return;
 
-                var requestLineParts = requestLines[0].Split(' ', 3);
+                string[] requestLineParts = requestLines[0].Split(' ');
                 if (requestLineParts.Length < 2) return;
-
-                var path = requestLineParts[1];
+                
+                string path = requestLineParts[1];
                 byte[] response;
 
                 if (path == "/")
@@ -42,7 +52,7 @@ class Program
                 }
                 else if (path.StartsWith("/echo/"))
                 {
-                    var message = path.Substring(6); // Skip "/echo/"
+                    string message = path.Substring(6);
                     response = Encoding.UTF8.GetBytes(
                         "HTTP/1.1 200 OK\r\n" +
                         "Content-Type: text/plain\r\n" +
@@ -53,8 +63,6 @@ class Program
                 else if (path == "/user-agent")
                 {
                     string userAgent = "";
-
-                    // Search through all headers for User-Agent
                     foreach (var line in requestLines)
                     {
                         if (line.StartsWith("User-Agent:"))
@@ -63,7 +71,6 @@ class Program
                             break;
                         }
                     }
-
                     response = Encoding.UTF8.GetBytes(
                         "HTTP/1.1 200 OK\r\n" +
                         "Content-Type: text/plain\r\n" +
@@ -75,16 +82,14 @@ class Program
                 {
                     response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
                 }
-                
-                await client.SendAsync(response);
 
+                await client.SendAsync(response, SocketFlags.None);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
-
-
+        }
+        catch (Exception ex)
+        {
+            // Silent handling - comment out in development if you need debugging
+            // Console.WriteLine($"Error: {ex.Message}");
         }
     }
 }
