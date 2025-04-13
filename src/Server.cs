@@ -4,23 +4,31 @@ using System.Text;
 
 class Program
 {
-    static void Main(string[] args)
+    static async void Main(string[] args)
     {
         TcpListener server = new TcpListener(IPAddress.Any, 4221);
         server.Start();
+        Console.WriteLine("Server started. Waiting for connections...");
         
         while (true) // Keep server running for multiple requests
         {
-            using Socket client = server.AcceptSocket();
+            using Socket client = await server.AcceptSocketAsync();
+            Task.Run(() => HandleClient(client));
+        }
+    }
+    static void HandleClient(Socket client)
+    {
+        using (client)
+        {
             byte[] buffer = new byte[1024];
             int bytesRead = client.Receive(buffer);
             string request = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
             var requestLines = request.Split("\r\n");
-            if (requestLines.Length == 0) continue;
+            if (requestLines.Length == 0) return;
 
             var requestLineParts = requestLines[0].Split(' ', 3);
-            if (requestLineParts.Length < 2) continue;
+            if (requestLineParts.Length < 2) return;
             
             var path = requestLineParts[1];
             byte[] response;
