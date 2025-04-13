@@ -4,7 +4,7 @@ using System.Text;
 
 class Program
 {
-    static async void Main(string[] args)
+    static  async Task Main(string[] args)
     {
         TcpListener server = new TcpListener(IPAddress.Any, 4221);
         server.Start();
@@ -13,7 +13,7 @@ class Program
         while (true) // Keep server running for multiple requests
         {
             using Socket client = await server.AcceptSocketAsync();
-            Task.Run(() => HandleClient(client));
+            _ =Task.Run(() => HandleClient(client));
         }
     }
     static void HandleClient(Socket client)
