@@ -60,6 +60,32 @@ class Program
                         "\r\n" +
                         $"{message}");
                 }
+                else if (path.StartsWith("/files"))
+                {
+                    // get file byte number
+                    string fileName = path.Substring(7);
+                    string projectDir = Directory.GetParent(Environment.CurrentDirectory)!.Parent!.Parent!.FullName;
+                    string filePath = System.IO.Path.Combine(projectDir + "/tmp", fileName);
+
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        string fileContent = System.IO.File.ReadAllText(filePath);
+                        string fileSize = fileContent.Length.ToString();
+
+                        response = Encoding.UTF8.GetBytes(
+                            "HTTP/1.1 200 OK\r\n" +
+                            "Content-Type: application/octet-stream\r\n" +
+                            $"Content-Length: {fileSize}\r\n" +
+                            "\r\n" +
+                            $"{fileContent}");
+                    }
+                    else
+                    {
+                        response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
+                    }
+                   
+
+                }
                 else if (path == "/user-agent")
                 {
                     string userAgent = "";
