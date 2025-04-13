@@ -65,7 +65,7 @@ class Program
                     // get file byte number
                     string fileName = path.Substring(7);
                     string projectDir = Directory.GetParent(Environment.CurrentDirectory)!.Parent!.Parent!.FullName;
-                    string filePath = System.IO.Path.Combine(projectDir + "/tmp", fileName);
+                    string filePath = System.IO.Path.Combine(projectDir + "/tmp/data/codecrafters.io/http-server-tester/", fileName);
 
                     if (System.IO.File.Exists(filePath))
                     {
