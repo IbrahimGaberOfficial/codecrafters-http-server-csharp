@@ -8,7 +8,7 @@ class Program
     {
         TcpListener server = new TcpListener(IPAddress.Any, 4221);
         server.Start();
-        Console.WriteLine("Server started. Waiting for connections...");
+        // Console.WriteLine("Server started. Waiting for connections...");
         
         while (true) // Keep server running for multiple requests
         {
