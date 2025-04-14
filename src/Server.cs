@@ -5,19 +5,8 @@ using System.Threading.Tasks;
 
 class Program
 {
-    static string DirectoryPath = "";
     static async Task Main(string[] args)
     {
-        // Parse --directory argument
-        for (int i = 0; i < args.Length; i++)
-        {
-            if (args[i] == "--directory" && i + 1 < args.Length)
-            {
-                DirectoryPath = args[i + 1];
-                break;
-            }
-        }
-
         TcpListener server = new TcpListener(IPAddress.Any, 4221);
         server.Start();
 
@@ -75,8 +64,9 @@ class Program
                 {
                     // get file byte number
                     string fileName = path.Substring(7);
-                    //string projectDir = Directory.GetParent(Environment.CurrentDirectory)!.Parent!.Parent!.FullName;
-                    string filePath = System.IO.Path.Combine(DirectoryPath, fileName);
+                    var argv = Environment.GetCommandLineArgs();
+                    var currentDirectory = argv[2];
+                    string filePath = System.IO.Path.Combine(currentDirectory, fileName);
 
                     if (System.IO.File.Exists(filePath))
                     {
