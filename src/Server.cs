@@ -74,10 +74,10 @@ class Program
                     }
                     else if (path.StartsWith("/files"))
                     {
-                        // get file byte number
-                        string fileName = path.Substring(7);
+                        // get file name
+                        string fileName = path.Substring("/files/".Length);
                         var argv = Environment.GetCommandLineArgs();
-                        var currentDirectory = argv[0];
+                        var currentDirectory = argv[2];
                         string filePath = System.IO.Path.Combine(currentDirectory, fileName);
 
                         if (System.IO.File.Exists(filePath))
