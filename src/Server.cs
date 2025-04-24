@@ -124,7 +124,7 @@ class Program
                     if (path.StartsWith("/files"))
                     {
                         var argv = Environment.GetCommandLineArgs();
-                        var currentDirectory = argv[0];
+                        var currentDirectory = argv[2];
                         // get the file name
                         string fileName = path.Substring("/files".Length);
                         string filePath = System.IO.Path.Combine(currentDirectory, fileName);
