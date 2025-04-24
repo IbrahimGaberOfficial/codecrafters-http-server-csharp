@@ -9,6 +9,13 @@ class Program
     {
         TcpListener server = new TcpListener(IPAddress.Any, 4221);
         server.Start();
+        // var argv = Environment.GetCommandLineArgs();
+        // var currentDirectory = argv[2];
+        // Console.WriteLine("currentDir = " + currentDirectory);
+        // System.Console.WriteLine(argv[0]);
+        // System.Console.WriteLine(argv[1]);
+        // System.Console.WriteLine(argv[2]);
+        // return;
 
         try
         {
@@ -126,7 +133,7 @@ class Program
                         var argv = Environment.GetCommandLineArgs();
                         var currentDirectory = argv[2];
                         // get the file name
-                        string fileName = path.Substring("/files".Length);
+                        string fileName = path.Substring("/files/".Length);
                         string filePath = System.IO.Path.Combine(currentDirectory, fileName);
                         System.IO.File.WriteAllText(filePath, body);
 
@@ -145,7 +152,7 @@ class Program
         catch (Exception ex)
         {
             // Silent handling - comment out in development if you need debugging
-             Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 }
