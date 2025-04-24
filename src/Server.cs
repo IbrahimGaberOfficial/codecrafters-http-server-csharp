@@ -32,91 +32,120 @@ class Program
             {
                 byte[] buffer = new byte[1024];
                 int bytesRead = await client.ReceiveAsync(buffer, SocketFlags.None);
-                
+
                 if (bytesRead == 0) return; // Connection closed
 
                 string request = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                 string[] requestLines = request.Split("\r\n");
-                
+
                 if (requestLines.Length == 0) return;
 
                 string[] requestLineParts = requestLines[0].Split(' ');
                 if (requestLineParts.Length < 2) return;
-                
+
                 string path = requestLineParts[1];
                 byte[] response;
 
-                if (path == "/")
-                {
-                    response = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK\r\n\r\n");
-                }
-                else if (path.StartsWith("/echo/"))
-                {
-                    string message = path.Substring(6);
-                    response = Encoding.UTF8.GetBytes(
-                        "HTTP/1.1 200 OK\r\n" +
-                        "Content-Type: text/plain\r\n" +
-                        $"Content-Length: {message.Length}\r\n" +
-                        "\r\n" +
-                        $"{message}");
-                }
-                else if (path.StartsWith("/files"))
-                {
-                    // get file byte number
-                    string fileName = path.Substring(7);
-                    var argv = Environment.GetCommandLineArgs();
-                    var currentDirectory = argv[2];
-                    string filePath = System.IO.Path.Combine(currentDirectory, fileName);
+                // get the method type
+                string method = requestLineParts[0];
 
-                    if (System.IO.File.Exists(filePath))
+                if (method.Equals("GET"))
+                {
+                    if (path == "/")
                     {
-                        string fileContent = System.IO.File.ReadAllText(filePath);
-                        string fileSize = fileContent.Length.ToString();
-
+                        response = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK\r\n\r\n");
+                    }
+                    else if (path.StartsWith("/echo/"))
+                    {
+                        string message = path.Substring(6);
                         response = Encoding.UTF8.GetBytes(
                             "HTTP/1.1 200 OK\r\n" +
-                            "Content-Type: application/octet-stream\r\n" +
-                            $"Content-Length: {fileSize}\r\n" +
+                            "Content-Type: text/plain\r\n" +
+                            $"Content-Length: {message.Length}\r\n" +
                             "\r\n" +
-                            $"{fileContent}");
+                            $"{message}");
+                    }
+                    else if (path.StartsWith("/files"))
+                    {
+                        // get file byte number
+                        string fileName = path.Substring(7);
+                        var argv = Environment.GetCommandLineArgs();
+                        var currentDirectory = argv[0];
+                        string filePath = System.IO.Path.Combine(currentDirectory, fileName);
+
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            string fileContent = System.IO.File.ReadAllText(filePath);
+                            string fileSize = fileContent.Length.ToString();
+
+                            response = Encoding.UTF8.GetBytes(
+                                "HTTP/1.1 200 OK\r\n" +
+                                "Content-Type: application/octet-stream\r\n" +
+                                $"Content-Length: {fileSize}\r\n" +
+                                "\r\n" +
+                                $"{fileContent}");
+                        }
+                        else
+                        {
+                            response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
+                        }
+
+
+                    }
+                    else if (path == "/user-agent")
+                    {
+                        string userAgent = "";
+                        foreach (var line in requestLines)
+                        {
+                            if (line.StartsWith("User-Agent:"))
+                            {
+                                userAgent = line.Substring(11).Trim();
+                                break;
+                            }
+                        }
+                        response = Encoding.UTF8.GetBytes(
+                            "HTTP/1.1 200 OK\r\n" +
+                            "Content-Type: text/plain\r\n" +
+                            $"Content-Length: {userAgent.Length}\r\n" +
+                            "\r\n" +
+                            $"{userAgent}");
                     }
                     else
                     {
                         response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
                     }
-                   
 
+                    await client.SendAsync(response, SocketFlags.None);
                 }
-                else if (path == "/user-agent")
+                else if (method.Equals("POST"))
                 {
-                    string userAgent = "";
-                    foreach (var line in requestLines)
+                    // get the body
+                    string body = requestLines[requestLines.Length - 1];
+                    if (path.StartsWith("/files"))
                     {
-                        if (line.StartsWith("User-Agent:"))
-                        {
-                            userAgent = line.Substring(11).Trim();
-                            break;
-                        }
-                    }
-                    response = Encoding.UTF8.GetBytes(
-                        "HTTP/1.1 200 OK\r\n" +
-                        "Content-Type: text/plain\r\n" +
-                        $"Content-Length: {userAgent.Length}\r\n" +
-                        "\r\n" +
-                        $"{userAgent}");
-                }
-                else
-                {
-                    response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
-                }
+                        var argv = Environment.GetCommandLineArgs();
+                        var currentDirectory = argv[0];
+                        // get the file name
+                        string fileName = path.Substring("/files".Length);
+                        string filePath = System.IO.Path.Combine(currentDirectory, fileName);
+                        System.IO.File.WriteAllText(filePath, body);
 
-                await client.SendAsync(response, SocketFlags.None);
+                        response = Encoding.UTF8.GetBytes("HTTP/1.1 201 Created\r\n\r\n");
+                    }
+                    else
+                    {
+                        response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
+                    }
+                    await client.SendAsync(response, SocketFlags.None);
+
+                }
             }
+
         }
         catch (Exception ex)
         {
             // Silent handling - comment out in development if you need debugging
-            // Console.WriteLine($"Error: {ex.Message}");
+             Console.WriteLine($"Error: {ex.Message}");
         }
     }
 }
