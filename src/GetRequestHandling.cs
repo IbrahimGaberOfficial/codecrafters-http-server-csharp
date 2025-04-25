@@ -35,9 +35,9 @@ public static class GETRequestHandler
         else if (path.StartsWith("/echo/"))
         {
             var CompressionHeaders = getCompressionHeaders(requestLines);
-            string message = path.Substring(6);
+            string message = path.Substring("/echo/".Length);
 
-            if (CompressionHeaders.Equals("gzip"))
+            if (CompressionHeaders != null && CompressionHeaders.Equals("gzip"))
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(message);
                 using (var compressedStream = new MemoryStream())

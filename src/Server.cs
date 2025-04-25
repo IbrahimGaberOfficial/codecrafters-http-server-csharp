@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using GETRequestHandling;
+using POSTRequestHandling;
 
 class Program
 {
@@ -59,12 +61,12 @@ class Program
 
                 if (method.Equals("GET"))
                 {
-                    response = GETRequestHandling.GETRequestHandler.HandleGETRequest(client, requestLines, requestLineParts);
+                    response = GETRequestHandler.HandleGETRequest(client, requestLines, requestLineParts);
 
                 }
                 else if (method.Equals("POST"))
                 {
-                    response = POSTRequestHandling.POSTRequestHandler.HandlePOSTRequest(client, requestLines, requestLineParts);
+                    response = POSTRequestHandler.HandlePOSTRequest(client, requestLines, requestLineParts);
                 }
                 else
                 {
