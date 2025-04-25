@@ -50,41 +50,27 @@ class Program
                 string[] requestLineParts = requestLines[0].Split(' ');
                 if (requestLineParts.Length < 2) return;
 
-                string path = requestLineParts[1]; // remove after final edits
                 byte[] response; // remove after final edits
 
                 // get the method type
                 string method = requestLineParts[0];
 
-                
+
 
                 if (method.Equals("GET"))
                 {
-                    GetRequestHandling.GetRequestHandler.HandleGetRequest(path);
-                   
+                    response = GETRequestHandling.GETRequestHandler.HandleGETRequest(client, requestLines, requestLineParts);
+
                 }
                 else if (method.Equals("POST"))
                 {
-                    // get the body
-                    string body = requestLines[requestLines.Length - 1];
-                    if (path.StartsWith("/files"))
-                    {
-                        var argv = Environment.GetCommandLineArgs();
-                        var currentDirectory = argv[2];
-                        // get the file name
-                        string fileName = path.Substring("/files/".Length);
-                        string filePath = System.IO.Path.Combine(currentDirectory, fileName);
-                        System.IO.File.WriteAllText(filePath, body);
-
-                        response = Encoding.UTF8.GetBytes("HTTP/1.1 201 Created\r\n\r\n");
-                    }
-                    else
-                    {
-                        response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
-                    }
-                    await client.SendAsync(response, SocketFlags.None);
-
+                    response = POSTRequestHandling.POSTRequestHandler.HandlePOSTRequest(client, requestLines, requestLineParts);
                 }
+                else
+                {
+                    response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
+                }
+                await client.SendAsync(response, SocketFlags.None);
             }
 
         }
