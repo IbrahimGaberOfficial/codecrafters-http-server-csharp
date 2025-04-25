@@ -1,16 +1,32 @@
+using System.Dynamic;
 using System.Net.Sockets;
 using System.Text;
+using System.IO.Compression;
 using System.Threading.Tasks;
 
 
 namespace GETRequestHandling;
 public static class GETRequestHandler
 {
+    static string getCompressionHeaders(string[] requestLines)
+    {
+        string acceptEncoding = null;
+        // Check if the request contains compression headers
+        foreach (var line in requestLines)
+        {
+            if (line.StartsWith("Accept-Encoding:"))
+            {
+                acceptEncoding = line.Substring("Accept-Encoding:".Length).Trim();
+                return acceptEncoding;
+            }
+        }
+        return acceptEncoding;
+    }
+
     public static byte[] HandleGETRequest(Socket clinet, string[] requestLines, string[] requestLineParts)
     {
-        string path = requestLineParts[1]; // remove after final edits
-        byte[] response; // remove after final edits
-
+        string path = requestLineParts[1];
+        byte[] response;
 
         if (path == "/")
         {
@@ -18,7 +34,33 @@ public static class GETRequestHandler
         }
         else if (path.StartsWith("/echo/"))
         {
+            var CompressionHeaders = getCompressionHeaders(requestLines);
             string message = path.Substring(6);
+
+            if (CompressionHeaders.Equals("gzip"))
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(message);
+                using (var compressedStream = new MemoryStream())
+                {
+                    using (var gzipStream = new GZipStream(compressedStream, CompressionMode.Compress))
+                    {
+                        gzipStream.Write(bytes, 0, bytes.Length);
+                    }
+                    message = Convert.ToBase64String(compressedStream.ToArray());
+
+                    response = Encoding.UTF8.GetBytes(
+                   "HTTP/1.1 200 OK\r\n" +
+                   "Content-Encoding: gzip\r\n" +
+                   "Content-Type: text/plain\r\n" +
+                   $"Content-Length: {message.Length}\r\n" +
+                   "\r\n" +
+                   $"{message}");
+
+                    return response;
+                }
+
+            }
+
             response = Encoding.UTF8.GetBytes(
                 "HTTP/1.1 200 OK\r\n" +
                 "Content-Type: text/plain\r\n" +
