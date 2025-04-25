@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 namespace GETRequestHandling;
 public static class GETRequestHandler
 {
-    static string getCompressionHeaders(string[] requestLines)
+    static string[] getCompressionHeaders(string[] requestLines)
     {
-        string acceptEncoding = null;
+        string[] acceptEncoding = null;
         // Check if the request contains compression headers
         foreach (var line in requestLines)
         {
             if (line.StartsWith("Accept-Encoding:"))
             {
-                acceptEncoding = line.Substring("Accept-Encoding:".Length).Trim();
+                acceptEncoding = line.Substring("Accept-Encoding:".Length).Trim().Split(", ");
                 return acceptEncoding;
             }
         }
@@ -37,7 +37,7 @@ public static class GETRequestHandler
             var CompressionHeaders = getCompressionHeaders(requestLines);
             string message = path.Substring("/echo/".Length);
 
-            if (CompressionHeaders != null && CompressionHeaders.Equals("gzip"))
+            if (CompressionHeaders != null && CompressionHeaders.Contains("gzip"))
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(message);
                 using (var compressedStream = new MemoryStream())
