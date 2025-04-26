@@ -47,7 +47,7 @@ public static class GETRequestHandler
                         gzipStream.Write(bytes, 0, bytes.Length);
                     }
                     var compressedBytes = compressedStream.ToArray();
-                    string hexString = BitConverter.ToString(compressedBytes).Replace("-", " ");
+                    string hexString = BitConverter.ToString(compressedBytes);//.Replace("-", " ");
 
                     response = Encoding.UTF8.GetBytes(
                    "HTTP/1.1 200 OK\r\n" +
