@@ -46,15 +46,16 @@ public static class GETRequestHandler
                     {
                         gzipStream.Write(bytes, 0, bytes.Length);
                     }
-                    message = Convert.ToBase64String(compressedStream.ToArray());
+                    var compressedBytes = compressedStream.ToArray();
+                    string hexString = BitConverter.ToString(compressedBytes).Replace("-", " ");
 
                     response = Encoding.UTF8.GetBytes(
                    "HTTP/1.1 200 OK\r\n" +
                    "Content-Encoding: gzip\r\n" +
                    "Content-Type: text/plain\r\n" +
-                   $"Content-Length: {message.Length}\r\n" +
+                   $"Content-Length: {hexString.Length}\r\n" +
                    "\r\n" +
-                   $"{message}");
+                   $"{hexString}");
 
                     return response;
                 }
