@@ -47,13 +47,13 @@ public static class GETRequestHandler
                         gzipStream.Write(bytes, 0, bytes.Length);
                     }
                     var compressedBytes = compressedStream.ToArray();
-                    string hexString = BitConverter.ToString(compressedBytes);//.Replace("-", " ");
+                    string hexString = BitConverter.ToString(compressedBytes).Replace("-", " ");
 
                     response = Encoding.UTF8.GetBytes(
                    "HTTP/1.1 200 OK\r\n" +
                    "Content-Encoding: gzip\r\n" +
                    "Content-Type: text/plain\r\n" +
-                   $"Content-Length: {hexString.Length}\r\n" +
+                   $"Content-Length: {compressedBytes.Length}\r\n" +
                    "\r\n" +
                    $"{hexString}");
 
