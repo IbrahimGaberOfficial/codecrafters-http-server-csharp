@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace POSTRequestHandling;
 public static class POSTRequestHandler
 {
-    public static byte[] HandlePOSTRequest(Socket clinet, string[] requestLines, string[] requestLineParts)
+    public static byte[] HandlePOSTRequest(Socket clinet, string[] requestLines, string[] requestLineParts, bool closeConnection)
     {
         byte[] response;
         string path = requestLineParts[1];

@@ -23,45 +23,22 @@ public static class GETRequestHandler
         return acceptEncoding;
     }
 
-    public static byte[] HandleGETRequest(Socket clinet, string[] requestLines, string[] requestLineParts)
+    public static byte[] HandleGETRequest(Socket clinet, string[] requestLines, string[] requestLineParts, bool closeConnection)
     {
         string path = requestLineParts[1];
         byte[] response;
 
         if (path == "/")
         {
-            response = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK\r\n\r\n");
+            response = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK\r\n" +
+            $"{(closeConnection == true ? "Connection: close" : "")}" +
+                                             "\r\n");
+
         }
         else if (path.StartsWith("/echo/"))
         {
             var CompressionHeaders = getCompressionHeaders(requestLines);
             string message = path.Substring("/echo/".Length);
-
-            // if (CompressionHeaders != null && CompressionHeaders.Contains("gzip"))
-            // {
-            //     byte[] bytes = Encoding.UTF8.GetBytes(message);
-            //     using (var compressedStream = new MemoryStream())
-            //     {
-            //         using (var gzipStream = new GZipStream(compressedStream, CompressionMode.Compress))
-            //         {
-            //             gzipStream.Write(bytes, 0, bytes.Length);
-            //         }
-            //         var compressedBytes = compressedStream.ToArray();
-            //         string hexString = BitConverter.ToString(compressedBytes);//.Replace("-", " ");
-
-
-            //         response = Encoding.UTF8.GetBytes(
-            //        "HTTP/1.1 200 OK\r\n" +
-            //        "Content-Encoding: gzip\r\n" +
-            //        "Content-Type: text/plain\r\n" +
-            //        $"Content-Length: {compressedBytes.Length}\r\n" +
-            //        "\r\n" +
-            //        $"{hexString}");
-
-            //         return response;
-            //     }
-
-            // }
 
             if (CompressionHeaders != null && CompressionHeaders.Contains("gzip"))
             {
@@ -80,9 +57,10 @@ public static class GETRequestHandler
                 // Create the HTTP header as a string
                 string responseHeaders =
                     "HTTP/1.1 200 OK\r\n" +
+                    $"Content-Length: {compressedBytes.Length}\r\n" +
                     "Content-Encoding: gzip\r\n" +
                     "Content-Type: text/plain\r\n" +
-                    $"Content-Length: {compressedBytes.Length}\r\n" +
+                     $"{(closeConnection == true ? "Connection: close" : "")}" +
                     "\r\n";
 
                 // Convert the headers to bytes
@@ -99,6 +77,7 @@ public static class GETRequestHandler
 
             response = Encoding.UTF8.GetBytes(
                 "HTTP/1.1 200 OK\r\n" +
+                 $"{(closeConnection == true ? "Connection: close" : "")}" +
                 "Content-Type: text/plain\r\n" +
                 $"Content-Length: {message.Length}\r\n" +
                 "\r\n" +
@@ -119,6 +98,7 @@ public static class GETRequestHandler
 
                 response = Encoding.UTF8.GetBytes(
                                 "HTTP/1.1 200 OK\r\n" +
+                                $"{(closeConnection == true ? "Connection: close" : "")}" +
                                 "Content-Type: application/octet-stream\r\n" +
                                 $"Content-Length: {fileSize}\r\n" +
                                 "\r\n" +
@@ -126,7 +106,9 @@ public static class GETRequestHandler
             }
             else
             {
-                response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
+                response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n" +
+                 $"{(closeConnection == true ? "Connection: close" : "")}" +
+                 "\r\n");
             }
 
 
@@ -144,6 +126,7 @@ public static class GETRequestHandler
             }
             response = Encoding.UTF8.GetBytes(
                 "HTTP/1.1 200 OK\r\n" +
+                 $"{(closeConnection == true ? "Connection: close" : "")}" +
                 "Content-Type: text/plain\r\n" +
                 $"Content-Length: {userAgent.Length}\r\n" +
                 "\r\n" +
@@ -151,7 +134,9 @@ public static class GETRequestHandler
         }
         else
         {
-            response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
+            response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n" +
+             $"{(closeConnection == true ? "Connection: close" : "")}" +
+             "\r\n");
         }
         return response;
 

@@ -71,23 +71,22 @@ class Program
 
                 // get the method type
                 string method = requestLineParts[0];
-
+                closeConnection = checkForCloseConnection(requestLines);
 
 
                 if (method.Equals("GET"))
                 {
-                    response = GETRequestHandler.HandleGETRequest(client, requestLines, requestLineParts);
+                    response = GETRequestHandler.HandleGETRequest(client, requestLines, requestLineParts, closeConnection);
 
                 }
                 else if (method.Equals("POST"))
                 {
-                    response = POSTRequestHandler.HandlePOSTRequest(client, requestLines, requestLineParts);
+                    response = POSTRequestHandler.HandlePOSTRequest(client, requestLines, requestLineParts, closeConnection);
                 }
                 else
                 {
                     response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
                 }
-                closeConnection = checkForCloseConnection(requestLines);
                 await client.SendAsync(response, SocketFlags.None);
 
             }
