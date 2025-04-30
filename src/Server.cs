@@ -53,44 +53,43 @@ class Program
         {
             while (closeConnection != true)
             {
-                using (client)
+
+                byte[] buffer = new byte[1024];
+                int bytesRead = await client.ReceiveAsync(buffer, SocketFlags.None);
+
+                if (bytesRead == 0) return; // Connection closed
+
+                string request = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                string[] requestLines = request.Split("\r\n");
+
+                if (requestLines.Length == 0) return;
+
+                string[] requestLineParts = requestLines[0].Split(' ');
+                if (requestLineParts.Length < 2) return;
+
+                byte[] response; // remove after final edits
+
+                // get the method type
+                string method = requestLineParts[0];
+
+
+
+                if (method.Equals("GET"))
                 {
-                    byte[] buffer = new byte[1024];
-                    int bytesRead = await client.ReceiveAsync(buffer, SocketFlags.None);
+                    response = GETRequestHandler.HandleGETRequest(client, requestLines, requestLineParts);
 
-                    if (bytesRead == 0) return; // Connection closed
-
-                    string request = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    string[] requestLines = request.Split("\r\n");
-
-                    if (requestLines.Length == 0) return;
-
-                    string[] requestLineParts = requestLines[0].Split(' ');
-                    if (requestLineParts.Length < 2) return;
-
-                    byte[] response; // remove after final edits
-
-                    // get the method type
-                    string method = requestLineParts[0];
-
-
-
-                    if (method.Equals("GET"))
-                    {
-                        response = GETRequestHandler.HandleGETRequest(client, requestLines, requestLineParts);
-
-                    }
-                    else if (method.Equals("POST"))
-                    {
-                        response = POSTRequestHandler.HandlePOSTRequest(client, requestLines, requestLineParts);
-                    }
-                    else
-                    {
-                        response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
-                    }
-                    closeConnection = checkForCloseConnection(requestLines);
-                    await client.SendAsync(response, SocketFlags.None);
                 }
+                else if (method.Equals("POST"))
+                {
+                    response = POSTRequestHandler.HandlePOSTRequest(client, requestLines, requestLineParts);
+                }
+                else
+                {
+                    response = Encoding.UTF8.GetBytes("HTTP/1.1 404 Not Found\r\n\r\n");
+                }
+                closeConnection = checkForCloseConnection(requestLines);
+                await client.SendAsync(response, SocketFlags.None);
+
             }
 
 
