@@ -454,5 +454,4 @@ $RECYCLE.BIN/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-codecrafters-http-server.csproj
-codecrafters-http-server.csproj
+./tmp/*
